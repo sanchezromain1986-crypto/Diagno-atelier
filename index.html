@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0a0f1a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DiagnoAtelier">
+<title>DiagnoAtelier</title>
+<link rel="manifest" href="/Diagno-atelier/manifest.json">
+
+<style>
+  /* Offline-safe fonts */
+
+  :root {
+    --bg: #0a0f1a;
+    --surface: #111827;
+    --surface2: #1a2436;
+    --border: #1f2d42;
+    --border2: #2a3d57;
+    --accent: #f59e0b;
+    --accent2: #fbbf24;
+    --red: #ef4444;
+    --green: #22c55e;
+    --blue: #3b82f6;
+    --text: #f1f5f9;
+    --text2: #94a3b8;
+    --text3: #4b6280;
+    --radius: 14px;
+    --tab-h: 64px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; background: var(--bg); font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; color: var(--text); }
+
+  /* ── LAYOUT ── */
+  #app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
+  #topbar { flex-shrink: 0; background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 16px; height: 58px; display: flex; align-items: center; gap: 10px; }
+  #content { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
+  #tabbar { flex-shrink: 0; background: var(--surface); border-top: 1px solid var(--border); height: var(--tab-h); display: flex; }
+
+  /* ── TOPBAR ── */
+  .tb-title { flex: 1; }
+  .tb-title h1 { font-family: 'Segoe UI', system-ui, sans-serif; font-size: 17px; font-weight: 800; color: var(--text); line-height: 1.2; }
+  .tb-title p  { font-size: 11px; color: var(--text3); margin-top: 1px; }
+  .btn-icon { width: 42px; height: 42px; border-radius: 10px; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text2); flex-shrink: 0; transition: background 0.15s; }
+  .btn-icon:active { background: var(--border); }
+  .btn-icon.accent { background: var(--accent); border-color: var(--accent); color: #000; }
+
+  /* ── TABS ── */
+  .tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border: none; background: none; cursor: pointer; color: var(--text3); font-size: 11px; font-weight: 600; transition: color 0.15s; }
+  .tab.active { color: var(--accent); }
+  .tab svg { transition: transform 0.2s; }
+  .tab.active svg { transform: scale(1.1); }
+
+  /* ── CARDS ── */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin: 0 16px 10px; cursor: pointer; transition: border-color 0.15s; }
+  .card:active { border-color: var(--accent); background: var(--surface2); }
+  .card-row { display: flex; align-items: flex-start; gap: 12px; }
+  .card-icon { width: 44px; height: 44px; border-radius: 10px; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+  .card-body { flex: 1; min-width: 0; }
+  .card-title { font-weight: 700; font-size: 15px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card-sub { font-size: 12px; color: var(--text3); margin-top: 3px; }
+  .chevron { color: var(--text3); flex-shrink: 0; }
+
+  /* ── BADGES ── */
+  .badge { display: inline-flex; align-items: center; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .badge-op { background: rgba(34,197,94,0.12); color: #4ade80; border: 1px solid rgba(34,197,94,0.2); }
+  .badge-maint { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+  .badge-code { background: rgba(245,158,11,0.12); color: var(--accent); border: 1px solid rgba(245,158,11,0.2); font-family: monospace; font-size: 12px; font-weight: 800; }
+
+  /* ── SECTIONS ── */
+  .section { margin: 0 16px 12px; }
+  .section-label { font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+  .page-pad { padding: 16px 0 90px; }
+
+  /* ── SEARCH ── */
+  .search-wrap { padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .search-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px 10px 38px; font-size: 15px; color: var(--text); outline: none; font-family: inherit; }
+  .search-input::placeholder { color: var(--text3); }
+  .search-wrap { position: relative; }
+  .search-icon { position: absolute; left: 28px; top: 50%; transform: translateY(-50%); color: var(--text3); pointer-events: none; }
+
+  /* ── FILTER PILLS ── */
+  .pills { display: flex; gap: 6px; padding: 0 16px 12px; overflow-x: auto; }
+  .pills::-webkit-scrollbar { display: none; }
+  .pill { white-space: nowrap; border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: 600; border: 1px solid var(--border); background: var(--surface); color: var(--text3); cursor: pointer; flex-shrink: 0; transition: all 0.15s; }
+  .pill.active { background: var(--accent); border-color: var(--accent); color: #000; }
+
+  /* ── DETAIL ── */
+  .detail-block { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin: 0 16px 12px; overflow: hidden; }
+  .detail-block-header { padding: 10px 14px; background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .detail-block-header span { font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 1.2px; }
+  .detail-block-body { padding: 14px; }
+  .etape-btn { display: flex; align-items: flex-start; gap: 10px; width: 100%; background: none; border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-bottom: 7px; cursor: pointer; text-align: left; transition: all 0.15s; }
+  .etape-btn.done { background: rgba(34,197,94,0.07); border-color: rgba(34,197,94,0.2); }
+  .etape-num { width: 24px; height: 24px; border-radius: 50%; background: var(--surface2); border: 1.5px solid var(--border2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: var(--text3); flex-shrink: 0; margin-top: 1px; transition: all 0.15s; }
+  .etape-num.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .etape-txt { font-size: 14px; color: var(--text2); line-height: 1.5; flex: 1; transition: all 0.15s; }
+  .etape-txt.done { color: #4ade80; text-decoration: line-through; opacity: 0.7; }
+  .progress-bar { height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 3px; transition: width 0.3s ease; }
+  .cause-item { display: flex; align-items: flex-start; gap: 8px; padding: 9px 10px; background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.1); border-radius: 8px; margin-bottom: 6px; }
+  .cause-num { color: #f87171; font-weight: 800; font-size: 12px; flex-shrink: 0; margin-top: 2px; }
+  .cause-txt { font-size: 14px; color: var(--text2); line-height: 1.4; }
+  .test-rapide { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2); border-radius: var(--radius); padding: 14px; margin: 0 16px 12px; }
+  .test-rapide-label { font-size: 10px; font-weight: 700; color: #60a5fa; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 6px; }
+  .test-rapide-txt { font-size: 14px; color: #93c5fd; line-height: 1.5; }
+
+  /* ── PHOTOS GRID ── */
+  .photos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .photo-thumb { border-radius: 10px; overflow: hidden; aspect-ratio: 4/3; background: var(--surface2); border: 1px solid var(--border); position: relative; cursor: pointer; }
+  .photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photo-thumb .del-btn { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.7); border: none; border-radius: 6px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; }
+  .add-photo-btn { border-radius: 10px; aspect-ratio: 4/3; background: var(--surface2); border: 1.5px dashed var(--border2); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; cursor: pointer; color: var(--text3); font-size: 12px; font-weight: 600; }
+  .add-photo-btn:active { border-color: var(--accent); color: var(--accent); }
+
+  /* ── FORMS ── */
+  .form-wrap { padding: 16px; }
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 6px; }
+  .form-input, .form-select, .form-textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 11px 14px; font-size: 15px; color: var(--text); font-family: inherit; outline: none; transition: border-color 0.15s; appearance: none; }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+  .form-textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+  .form-hint { font-size: 11px; color: var(--text3); margin-top: 4px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* ── BUTTONS ── */
+  .btn { border: none; border-radius: 10px; padding: 13px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity 0.15s; }
+  .btn:active { opacity: 0.8; }
+  .btn-primary { background: var(--accent); color: #000; width: 100%; }
+  .btn-secondary { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+  .btn-danger { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+  .btn-row { display: flex; gap: 10px; padding: 0 16px; margin-top: 8px; }
+  .btn-row .btn { flex: 1; }
+
+  /* ── MODALS ── */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 200; display: flex; align-items: flex-end; }
+  .modal-sheet { background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; max-height: 90vh; overflow-y: auto; padding-bottom: 24px; }
+  .modal-handle { width: 40px; height: 4px; background: var(--border2); border-radius: 2px; margin: 12px auto 0; }
+  .modal-title { font-family: 'Segoe UI', system-ui, sans-serif; font-size: 18px; font-weight: 800; padding: 16px 16px 12px; }
+  .modal-img-full { position: fixed; inset: 0; background: #000; z-index: 300; display: flex; align-items: center; justify-content: center; }
+  .modal-img-full img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .modal-img-close { position: absolute; top: 16px; right: 16px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; }
+
+  /* ── EMPTY STATES ── */
+  .empty { text-align: center; padding: 60px 20px; }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty h3 { font-size: 16px; font-weight: 700; color: var(--text2); }
+  .empty p { font-size: 13px; color: var(--text3); margin-top: 6px; line-height: 1.5; }
+
+  /* ── TOAST ── */
+  #toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface2); border: 1px solid var(--border2); border-radius: 12px; padding: 10px 18px; font-size: 14px; font-weight: 600; color: var(--text); z-index: 500; opacity: 0; transition: all 0.25s; white-space: nowrap; pointer-events: none; }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── HOME BANNER ── */
+  .home-banner { margin: 16px 16px 0; background: linear-gradient(135deg, #1a2436 0%, #111827 100%); border: 1px solid var(--border); border-radius: 18px; padding: 20px; display: flex; align-items: center; gap: 16px; }
+  .home-banner-icon { width: 56px; height: 56px; border-radius: 14px; background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.2); display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0; }
+  .home-banner-title { font-family: 'Segoe UI', system-ui, sans-serif; font-size: 20px; font-weight: 800; }
+  .home-banner-sub { font-size: 12px; color: var(--text3); margin-top: 3px; }
+  .stats-row { display: flex; gap: 10px; margin: 12px 16px; }
+  .stat-card { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; }
+  .stat-num { font-family: 'Segoe UI', system-ui, sans-serif; font-size: 24px; font-weight: 800; color: var(--accent); }
+  .stat-lbl { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  /* ── MACHINE GRID ── */
+  .machine-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 16px; }
+  .machine-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; cursor: pointer; transition: all 0.15s; }
+  .machine-card:active { border-color: var(--accent); background: var(--surface2); }
+  .machine-card-icon { font-size: 28px; margin-bottom: 10px; }
+  .machine-card-name { font-weight: 700; font-size: 14px; color: var(--text); }
+  .machine-card-id { font-size: 11px; color: var(--text3); margin-top: 2px; font-family: monospace; }
+  .machine-card-count { margin-top: 8px; display: flex; align-items: center; justify-content: space-between; }
+  .count-badge { background: rgba(245,158,11,0.12); color: var(--accent); border: 1px solid rgba(245,158,11,0.2); border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+
+  .divider { height: 1px; background: var(--border); margin: 8px 16px; }
+  .scroll-top { padding-top: 12px; }
+
+  /* ── SETTINGS ── */
+  .settings-section { margin: 16px 16px 0; }
+  .settings-section-title { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 8px; }
+  .settings-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: background 0.15s; }
+  .settings-item:active { background: var(--surface2); }
+  .settings-item-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .settings-item-body { flex: 1; }
+  .settings-item-title { font-weight: 600; font-size: 15px; color: var(--text); }
+  .settings-item-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+  .toggle { width: 46px; height: 26px; border-radius: 13px; background: var(--border2); position: relative; cursor: pointer; transition: background 0.2s; flex-shrink: 0; border: none; }
+  .toggle.on { background: var(--accent); }
+  .toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: transform 0.2s; }
+  .toggle.on::after { transform: translateX(20px); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-in { animation: fadeIn 0.2s ease forwards; }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .slide-up { animation: slideUp 0.25s ease; }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <div class="tb-title">
+      <h1 id="tb-title-text">DiagnoAtelier</h1>
+      <p id="tb-sub-text">Sélectionner une machine</p>
+    </div>
+    <div id="tb-right" style="display:flex;gap:8px;"></div>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content"></div>
+
+  <!-- TABBAR -->
+  <div id="tabbar">
+    <button class="tab active" onclick="switchTab('home')" id="tab-home">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Accueil
+    </button>
+    <button class="tab" onclick="switchTab('machines')" id="tab-machines">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      Machines
+    </button>
+    <button class="tab" onclick="switchTab('search')" id="tab-search">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Recherche
+    </button>
+    <button class="tab" onclick="switchTab('settings')" id="tab-settings">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Paramètres
+    </button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- HIDDEN FILE INPUT FOR CAMERA -->
+<input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none" onchange="handlePhoto(this)">
+
+<script>
+// ═══════════════════════════════════════════════════════
+// DATABASE (IndexedDB)
+// ═══════════════════════════════════════════════════════
+let db;
+const DB_NAME = 'DiagnoAtelier';
+const DB_VER = 1;
+
+function openDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('machines')) {
+        const ms = d.createObjectStore('machines', { keyPath: 'id', autoIncrement: true });
+        ms.createIndex('nom', 'nom', { unique: false });
+      }
+      if (!d.objectStoreNames.contains('defauts')) {
+        const ds = d.createObjectStore('defauts', { keyPath: 'id', autoIncrement: true });
+        ds.createIndex('machineId', 'machineId', { unique: false });
+      }
+    };
+    req.onsuccess = e => { db = e.target.result; res(db); };
+    req.onerror = e => rej(e);
+  });
+}
+
+function dbGetAll(store) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction(store, 'readonly');
+    const req = tx.objectStore(store).getAll();
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => rej(req.error);
+  });
+}
+function dbGet(store, id) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction(store, 'readonly');
+    const req = tx.objectStore(store).get(id);
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => rej(req.error);
+  });
+}
+function dbAdd(store, data) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction(store, 'readwrite');
+    const req = tx.objectStore(store).add(data);
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => rej(req.error);
+  });
+}
+function dbPut(store, data) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction(store, 'readwrite');
+    const req = tx.objectStore(store).put(data);
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => rej(req.error);
+  });
+}
+function dbDelete(store, id) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction(store, 'readwrite');
+    const req = tx.objectStore(store).delete(id);
+    req.onsuccess = () => res();
+    req.onerror = () => rej(req.error);
+  });
+}
+function dbGetByIndex(store, index, val) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction(store, 'readonly');
+    const req = tx.objectStore(store).index(index).getAll(val);
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => rej(req.error);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+let state = {
+  tab: 'home',
+  isMaintenance: false,
+  selectedMachine: null,
+  selectedDefaut: null,
+  completedSteps: [],
+  editingMachine: null,
+  editingDefaut: null,
+  filterNiveau: 'Tous',
+  searchQ: '',
+  photoCallback: null,
+  lightboxSrc: null,
+  // temp photo for form
+  formPhotos: [],
+};
+
+// ═══════════════════════════════════════════════════════
+// SEED DATA
+// ═══════════════════════════════════════════════════════
+async function seedIfEmpty() {
+  const machines = await dbGetAll('machines');
+  if (machines.length > 0) return;
+  const m1 = await dbAdd('machines', { nom: 'Remplisseuse L1', icone: '🏭', code: 'M01' });
+  const m2 = await dbAdd('machines', { nom: 'Pasteurisateur A', icone: '🌡️', code: 'M02' });
+  const m3 = await dbAdd('machines', { nom: 'Étiqueteuse B', icone: '🏷️', code: 'M03' });
+  await dbAdd('defauts', {
+    machineId: m1, code: 'RL-001', nom: 'Fuite joint étanchéité',
+    description: 'Fuite au niveau du joint de la vanne de remplissage.',
+    causes: 'Joint usé ou détérioré\nSerrage insuffisant\nCorps étranger coincé\nSurpression dans le circuit',
+    etapes: 'Arrêter et consigner la machine (LOTO)\nLocaliser précisément la fuite visuellement\nVérifier le serrage du raccord (couple 25 Nm)\nInspecter l\'état du joint (fissure, déformation)\nRemplacer le joint si nécessaire\nTester étanchéité à 3 bars avant redémarrage',
+    testRapide: 'Appuyer sur TEST FUITE — observer la LED verte pendant 10s',
+    tempsEstime: '30 min', niveau: 'Maintenance', photos: []
+  });
+  await dbAdd('defauts', {
+    machineId: m1, code: 'RL-002', nom: 'Dosage incorrect',
+    description: 'Le volume rempli dévie de ±5% par rapport à la consigne.',
+    causes: 'Capteur de débit défaillant\nVanne de dosage encrassée\nBulles d\'air dans le circuit',
+    etapes: 'Vérifier la pression alimentation (2.5 ± 0.2 bars)\nPurger le circuit pour éliminer les bulles\nContrôler le débit sur l\'IHM (menu DIAGNOSTIC)\nNettoyer le filtre en ligne si colmaté',
+    testRapide: 'Menu IHM > TEST AUTO DOSAGE → résultat en 2 min',
+    tempsEstime: '20 min', niveau: 'Opérateur', photos: []
+  });
+  await dbAdd('defauts', {
+    machineId: m2, code: 'PA-001', nom: 'Température hors consigne',
+    description: 'La température de pasteurisation ne maintient pas la consigne à ±1°C.',
+    causes: 'Sonde PT100 défectueuse\nVanne régulatrice bloquée\nEncrassement échangeur',
+    etapes: 'Comparer valeur IHM avec thermomètre de référence\nVérifier la résistance de la sonde PT100\nContrôler l\'ouverture de la vanne vapeur\nInspecter l\'échangeur pour calcaire ou dépôts',
+    testRapide: 'Menu DIAGNOSTIC > TEST RÉGULATION → courbe attendue en 5 min',
+    tempsEstime: '45 min', niveau: 'Maintenance', photos: []
+  });
+  await dbAdd('defauts', {
+    machineId: m3, code: 'ET-001', nom: 'Mauvais positionnement étiquette',
+    description: 'L\'étiquette est collée de travers ou décalée de plus de 2 mm.',
+    causes: 'Guide bouteille mal réglé\nRouleau pression usé\nVitesse défilement incorrecte',
+    etapes: 'Arrêter et sécuriser la machine\nVérifier le réglage du guide bouteille\nContrôler l\'état du rouleau applicateur\nTester avec 5 bouteilles à vide\nAjuster la vitesse si nécessaire',
+    testRapide: 'Lancer 10 bouteilles test — tolérance ±1.5 mm',
+    tempsEstime: '25 min', niveau: 'Opérateur', photos: []
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════
+function el(id) { return document.getElementById(id); }
+function html(id, h) { const e = el(id); if (e) e.innerHTML = h; }
+function toast(msg, dur = 2500) {
+  const t = el('toast'); t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+function escHtml(s) { if (!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function splitLines(s) { return (s || '').split('\n').filter(l => l.trim()); }
+function badgeHtml(niveau) {
+  return niveau === 'Maintenance'
+    ? `<span class="badge badge-maint">Maintenance</span>`
+    : `<span class="badge badge-op">Opérateur</span>`;
+}
+function iconSvg(name, size=20) {
+  const icons = {
+    back: `<svg width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>`,
+    plus: `<svg width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+    edit: `<svg width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
+    trash: `<svg width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/></svg>`,
+    save: `<svg width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>`,
+    camera: `<svg width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>`,
+    x: `<svg width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+    check: `<svg width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`,
+    wrench: `<svg width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>`,
+    chevron: `<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>`,
+  };
+  return icons[name] || '';
+}
+
+// ═══════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════
+function switchTab(tab) {
+  state.tab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el('tab-'+tab)?.classList.add('active');
+  state.selectedMachine = null;
+  state.selectedDefaut = null;
+  render();
+}
+
+function render() {
+  const t = state.tab;
+  if (state.selectedDefaut) { renderDetail(); return; }
+  if (state.selectedMachine) { renderList(); return; }
+  if (t === 'home') renderHome();
+  else if (t === 'machines') renderMachines();
+  else if (t === 'search') renderSearch();
+  else if (t === 'settings') renderSettings();
+}
+
+function setTopbar(title, sub, rightHtml = '') {
+  el('tb-title-text').textContent = title;
+  el('tb-sub-text').textContent = sub;
+  el('tb-right').innerHTML = rightHtml;
+}
+
+// ═══════════════════════════════════════════════════════
+// HOME
+// ═══════════════════════════════════════════════════════
+async function renderHome() {
+  const [machines, defauts] = await Promise.all([dbGetAll('machines'), dbGetAll('defauts')]);
+  const visibleD = defauts.filter(d => state.isMaintenance || d.niveau !== 'Maintenance');
+  setTopbar('DiagnoAtelier', `${machines.length} machines • ${visibleD.length} fiches`);
+  el('tb-right').innerHTML = `
+    <button class="btn-icon ${state.isMaintenance ? 'accent' : ''}" onclick="toggleMode()" title="Basculer mode">
+      ${iconSvg('wrench', 20)}
+    </button>`;
+
+  let recentHtml = '';
+  const recent = defauts.filter(d => state.isMaintenance || d.niveau !== 'Maintenance').slice(-3).reverse();
+  if (recent.length > 0) {
+    recentHtml = `
+      <div class="section" style="margin-top:16px">
+        <div class="section-label">Défauts récents</div>
+        ${recent.map(d => {
+          const m = machines.find(m => m.id === d.machineId);
+          return `<div class="card" onclick="openDefaut(${d.id})">
+            <div class="card-row">
+              <div style="flex:1;min-width:0">
+                <div style="display:flex;gap:6px;align-items:center;margin-bottom:4px">
+                  <span class="badge badge-code">${escHtml(d.code)}</span>
+                  ${badgeHtml(d.niveau)}
+                </div>
+                <div class="card-title">${escHtml(d.nom)}</div>
+                <div class="card-sub">${m ? (m.icone + ' ' + escHtml(m.nom)) : ''} • ${escHtml(d.tempsEstime)}</div>
+              </div>
+              <div class="chevron">${iconSvg('chevron')}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+  }
+
+  el('content').innerHTML = `
+    <div class="fade-in page-pad scroll-top">
+      <div class="home-banner">
+        <div class="home-banner-icon">🏭</div>
+        <div>
+          <div class="home-banner-title">DiagnoAtelier</div>
+          <div class="home-banner-sub">Application de diagnostic terrain</div>
+          <div style="margin-top:8px">
+            <span style="background:${state.isMaintenance ? 'rgba(245,158,11,0.15)' : 'rgba(34,197,94,0.1)'};color:${state.isMaintenance ? 'var(--accent)' : '#4ade80'};border:1px solid ${state.isMaintenance ? 'rgba(245,158,11,0.3)' : 'rgba(34,197,94,0.2)'};border-radius:6px;padding:3px 10px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px">
+              ${state.isMaintenance ? '🔧 Mode Maintenance' : '👷 Mode Opérateur'}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num">${machines.length}</div><div class="stat-lbl">Machines</div></div>
+        <div class="stat-card"><div class="stat-num">${defauts.length}</div><div class="stat-lbl">Fiches</div></div>
+        <div class="stat-card"><div class="stat-num">${visibleD.length}</div><div class="stat-lbl">Visibles</div></div>
+      </div>
+      <div class="section" style="margin-top:8px">
+        <div class="section-label">Accès rapide machines</div>
+        <div class="machine-grid">
+          ${machines.map(m => {
+            const cnt = defauts.filter(d => d.machineId === m.id && (state.isMaintenance || d.niveau !== 'Maintenance')).length;
+            return `<div class="machine-card" onclick="openMachine(${m.id})">
+              <div class="machine-card-icon">${m.icone || '⚙️'}</div>
+              <div class="machine-card-name">${escHtml(m.nom)}</div>
+              <div class="machine-card-id">${escHtml(m.code)}</div>
+              <div class="machine-card-count">
+                <span class="count-badge">${cnt} défaut${cnt>1?'s':''}</span>
+                ${iconSvg('chevron')}
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+      ${recentHtml}
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// MACHINES TAB
+// ═══════════════════════════════════════════════════════
+async function renderMachines() {
+  const machines = await dbGetAll('machines');
+  setTopbar('Machines', `${machines.length} machine${machines.length>1?'s':''}`,
+    `<button class="btn-icon accent" onclick="openMachineForm(null)">${iconSvg('plus',20)}</button>`);
+  el('content').innerHTML = `
+    <div class="fade-in page-pad scroll-top">
+      ${machines.length === 0 ? `<div class="empty"><div class="empty-icon">⚙️</div><h3>Aucune machine</h3><p>Ajouter votre première machine via le bouton +</p></div>` :
+        machines.map(m => `
+          <div class="card" onclick="openMachine(${m.id})">
+            <div class="card-row">
+              <div class="card-icon">${m.icone || '⚙️'}</div>
+              <div class="card-body">
+                <div class="card-title">${escHtml(m.nom)}</div>
+                <div class="card-sub" style="font-family:monospace">${escHtml(m.code)}</div>
+              </div>
+              <button class="btn-icon" onclick="event.stopPropagation();openMachineForm(${m.id})" style="margin-left:4px">${iconSvg('edit',18)}</button>
+              <div class="chevron">${iconSvg('chevron')}</div>
+            </div>
+          </div>`).join('')}
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// LIST (défauts par machine)
+// ═══════════════════════════════════════════════════════
+async function renderList() {
+  const m = state.selectedMachine;
+  let defauts = await dbGetByIndex('defauts', 'machineId', m.id);
+  if (state.filterNiveau !== 'Tous') defauts = defauts.filter(d => d.niveau === state.filterNiveau);
+  if (state.searchQ) {
+    const q = state.searchQ.toLowerCase();
+    defauts = defauts.filter(d => d.nom.toLowerCase().includes(q) || d.code.toLowerCase().includes(q));
+  }
+
+  setTopbar(m.nom, `${m.code} — ${defauts.length} défaut${defauts.length>1?'s':''}`,
+    `<button class="btn-icon" onclick="state.selectedMachine=null;render()">${iconSvg('back',20)}</button>
+     <button class="btn-icon accent" onclick="openDefautForm(null)">${iconSvg('plus',20)}</button>`);
+
+  const searchSection = `
+    <div class="search-wrap" style="position:relative">
+      <div class="search-icon" style="top:22px;left:28px">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </div>
+      <input class="search-input" type="search" placeholder="Rechercher code ou nom…" value="${escHtml(state.searchQ)}" oninput="state.searchQ=this.value;renderList()">
+    </div>
+    <div class="pills" style="padding-top:10px">
+      ${['Tous','Opérateur','Maintenance'].map(n => `<span class="pill ${state.filterNiveau===n?'active':''}" onclick="state.filterNiveau='${n}';renderList()">${n}</span>`).join('')}
+    </div>`;
+
+  const listHtml = defauts.length === 0
+    ? `<div class="empty"><div class="empty-icon">🔍</div><h3>Aucun défaut trouvé</h3><p>Modifier les filtres ou ajouter une fiche</p></div>`
+    : defauts.map(d => `
+        <div class="card" onclick="openDefaut(${d.id})">
+          <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap">
+            <span class="badge badge-code">${escHtml(d.code)}</span>
+            ${badgeHtml(d.niveau)}
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <div style="flex:1;min-width:0">
+              <div class="card-title">${escHtml(d.nom)}</div>
+              <div class="card-sub" style="margin-top:4px">${escHtml(d.description)}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+              <div class="chevron">${iconSvg('chevron')}</div>
+              <span style="font-size:11px;color:var(--text3)">⏱ ${escHtml(d.tempsEstime)}</span>
+            </div>
+          </div>
+        </div>`).join('');
+
+  el('content').innerHTML = `<div class="fade-in">${searchSection}<div style="padding:8px 0 90px">${listHtml}</div></div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// DETAIL (fiche diagnostic)
+// ═══════════════════════════════════════════════════════
+async function renderDetail() {
+  const d = state.selectedDefaut;
+  const m = state.selectedMachine;
+  const etapes = splitLines(d.etapes);
+  const causes = splitLines(d.causes);
+  const photos = d.photos || [];
+  const done = state.completedSteps;
+  const pct = etapes.length > 0 ? Math.round(done.length / etapes.length * 100) : 0;
+
+  setTopbar(d.nom, `${d.code} • ⏱ ${d.tempsEstime}`,
+    `<button class="btn-icon" onclick="state.selectedDefaut=null;renderList()">${iconSvg('back',20)}</button>
+     <button class="btn-icon" onclick="openDefautForm(${d.id})">${iconSvg('edit',18)}</button>`);
+  el('content').innerHTML = `
+    <div class="fade-in page-pad scroll-top">
+      <!-- Badges -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;padding:16px 16px 8px">
+        ${badgeHtml(d.niveau)}
+        <span style="background:rgba(245,158,11,0.1);color:var(--accent);border:1px solid rgba(245,158,11,0.2);border-radius:6px;padding:2px 9px;font-size:11px;font-weight:700">⏱ ${escHtml(d.tempsEstime)}</span>
+        ${photos.length > 0 ? `<span style="background:var(--surface2);color:var(--text3);border:1px solid var(--border);border-radius:6px;padding:2px 9px;font-size:11px;font-weight:700">📷 ${photos.length} photo${photos.length>1?'s':''}</span>` : ''}
+      </div>
+
+      <!-- Description -->
+      <div class="detail-block">
+        <div class="detail-block-header"><span>🔎 Description</span></div>
+        <div class="detail-block-body" style="color:var(--text2);font-size:14px;line-height:1.6">${escHtml(d.description)}</div>
+      </div>
+
+      <!-- Causes -->
+      <div class="detail-block">
+        <div class="detail-block-header"><span>⚠️ Causes possibles</span></div>
+        <div class="detail-block-body">
+          ${causes.map((c,i) => `<div class="cause-item"><div class="cause-num">${i+1}.</div><div class="cause-txt">${escHtml(c)}</div></div>`).join('')}
+        </div>
+      </div>
+
+      <!-- Progression -->
+      ${etapes.length > 0 ? `
+        <div style="margin:0 16px 12px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="color:var(--text3);font-size:12px;font-weight:700">PROGRESSION</span>
+            <span style="color:var(--accent);font-weight:800;font-size:13px">${done.length}/${etapes.length} étapes</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        </div>` : ''}
+
+      <!-- Étapes -->
+      <div class="detail-block">
+        <div class="detail-block-header"><span>📋 Étapes de diagnostic</span></div>
+        <div class="detail-block-body">
+          ${etapes.map((e,i) => {
+            const isDone = done.includes(i);
+            return `<button class="etape-btn ${isDone?'done':''}" onclick="toggleStep(${i})">
+              <div class="etape-num ${isDone?'done':''}">${isDone ? iconSvg('check',12) : i+1}</div>
+              <div class="etape-txt ${isDone?'done':''}">${escHtml(e)}</div>
+            </button>`;
+          }).join('')}
+          ${done.length > 0 ? `<button onclick="state.completedSteps=[];renderDetail()" style="width:100%;margin-top:4px;background:none;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:12px;color:var(--text3);cursor:pointer;font-family:inherit">Réinitialiser</button>` : ''}
+        </div>
+      </div>
+
+      <!-- Test rapide -->
+      ${d.testRapide ? `
+        <div class="test-rapide">
+          <div class="test-rapide-label">⚡ Test rapide</div>
+          <div class="test-rapide-txt">${escHtml(d.testRapide)}</div>
+        </div>` : ''}
+
+      <!-- Photos -->
+      ${photos.length > 0 ? `
+        <div class="detail-block">
+          <div class="detail-block-header"><span>📷 Photos de référence</span></div>
+          <div class="detail-block-body">
+            <div class="photos-grid">
+              ${photos.map((p,i) => `
+                <div class="photo-thumb" onclick="openLightbox('${p.substring(0,30)}')" data-full="${escHtml(p)}">
+                  <img src="${p}" alt="Photo ${i+1}" onclick="event.stopPropagation();openLightboxSrc(this.closest('[data-full]').dataset.full)">
+                </div>`).join('')}
+            </div>
+          </div>
+        </div>` : ''}
+    </div>`;
+}
+
+function toggleStep(i) {
+  const arr = state.completedSteps;
+  const idx = arr.indexOf(i);
+  if (idx >= 0) arr.splice(idx, 1); else arr.push(i);
+  renderDetail();
+}
+
+// ═══════════════════════════════════════════════════════
+// SEARCH TAB
+// ═══════════════════════════════════════════════════════
+async function renderSearch() {
+  const [machines, defauts] = await Promise.all([dbGetAll('machines'), dbGetAll('defauts')]);
+  let visible = defauts;
+  const q = state.searchQ.toLowerCase();
+  if (q) visible = visible.filter(d =>
+    d.nom.toLowerCase().includes(q) ||
+    d.code.toLowerCase().includes(q) ||
+    (d.description||'').toLowerCase().includes(q)
+  );
+
+  setTopbar('Recherche', `${visible.length} résultat${visible.length>1?'s':''}`);
+  el('content').innerHTML = `
+    <div class="fade-in">
+      <div class="search-wrap" style="position:relative">
+        <div class="search-icon" style="top:22px;left:28px">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <input class="search-input" type="search" placeholder="Rechercher tous les défauts…" value="${escHtml(state.searchQ)}" oninput="state.searchQ=this.value;renderSearch()" autofocus>
+      </div>
+      <div class="pills" style="padding-top:10px">
+        ${['Tous','Opérateur','Maintenance'].map(n => `<span class="pill ${state.filterNiveau===n?'active':''}" onclick="state.filterNiveau='${n}';renderSearch()">${n}</span>`).join('')}
+      </div>
+      <div style="padding:4px 0 90px">
+        ${visible.length === 0 ? `<div class="empty"><div class="empty-icon">🔍</div><h3>${q ? 'Aucun résultat' : 'Tapez pour chercher'}</h3><p>${q ? 'Essayez un autre terme' : 'Code défaut, nom, description…'}</p></div>` :
+          visible.map(d => {
+            const m = machines.find(mx => mx.id === d.machineId);
+            return `<div class="card" onclick="openDefautFromSearch(${d.id},${d.machineId})">
+              <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+                <span class="badge badge-code">${escHtml(d.code)}</span>
+                ${badgeHtml(d.niveau)}
+              </div>
+              <div style="display:flex;gap:10px;align-items:flex-start">
+                <div style="flex:1;min-width:0">
+                  <div class="card-title">${escHtml(d.nom)}</div>
+                  <div class="card-sub">${m ? (m.icone+' '+escHtml(m.nom)) : ''} • ${escHtml(d.tempsEstime)}</div>
+                </div>
+                <div class="chevron">${iconSvg('chevron')}</div>
+              </div>
+            </div>`;
+          }).join('')}
+      </div>
+    </div>`;
+}
+
+async function openDefautFromSearch(defautId, machineId) {
+  const [d, m] = await Promise.all([dbGet('defauts', defautId), dbGet('machines', machineId)]);
+  state.selectedMachine = m;
+  state.selectedDefaut = d;
+  state.completedSteps = [];
+  renderDetail();
+}
+
+// ═══════════════════════════════════════════════════════
+// SETTINGS TAB
+// ═══════════════════════════════════════════════════════
+async function renderSettings() {
+  const [machines, defauts] = await Promise.all([dbGetAll('machines'), dbGetAll('defauts')]);
+  setTopbar('Paramètres', 'Configuration application');
+  el('content').innerHTML = `
+    <div class="fade-in page-pad scroll-top">
+      <!-- Mode -->
+      <div class="settings-section">
+        <div class="settings-section-title">Mode utilisateur</div>
+        <div class="settings-item" onclick="toggleMode()">
+          <div class="settings-item-icon" style="background:rgba(245,158,11,0.12)">${iconSvg('wrench',20)}</div>
+          <div class="settings-item-body">
+            <div class="settings-item-title">Mode Maintenance</div>
+            <div class="settings-item-sub">${state.isMaintenance ? 'Actif — accès complet' : 'Inactif — vue Opérateur'}</div>
+          </div>
+          <button class="toggle ${state.isMaintenance?'on':''}" onclick="event.stopPropagation();toggleMode()"></button>
+        </div>
+      </div>
+
+      <!-- Gestion machines -->
+      <div class="settings-section" style="margin-top:20px">
+        <div class="settings-section-title">Gestion des machines</div>
+        <div class="settings-item" onclick="switchTab('machines')">
+          <div class="settings-item-icon" style="background:rgba(59,130,246,0.12)">
+            <svg width="20" height="20" fill="none" stroke="#60a5fa" stroke-width="2.2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <div class="settings-item-body">
+            <div class="settings-item-title">Machines</div>
+            <div class="settings-item-sub">${machines.length} machine${machines.length>1?'s':''} configurée${machines.length>1?'s':''}</div>
+          </div>
+          <div class="chevron">${iconSvg('chevron')}</div>
+        </div>
+        <div class="settings-item" onclick="openMachineForm(null)">
+          <div class="settings-item-icon" style="background:rgba(34,197,94,0.12)">
+            <svg width="20" height="20" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <div class="settings-item-body">
+            <div class="settings-item-title">Ajouter une machine</div>
+            <div class="settings-item-sub">Créer une nouvelle machine</div>
+          </div>
+          <div class="chevron">${iconSvg('chevron')}</div>
+        </div>
+      </div>
+
+      <!-- Données -->
+      <div class="settings-section" style="margin-top:20px">
+        <div class="settings-section-title">Données</div>
+        <div class="settings-item" style="cursor:default">
+          <div class="settings-item-icon" style="background:rgba(245,158,11,0.12)">
+            <svg width="20" height="20" fill="none" stroke="var(--accent)" stroke-width="2.2" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+          </div>
+          <div class="settings-item-body">
+            <div class="settings-item-title">Base de données locale</div>
+            <div class="settings-item-sub">${defauts.length} fiche${defauts.length>1?'s':''} • Stockage IndexedDB</div>
+          </div>
+        </div>
+        <div class="settings-item" onclick="exportData()">
+          <div class="settings-item-icon" style="background:rgba(99,102,241,0.12)">
+            <svg width="20" height="20" fill="none" stroke="#818cf8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </div>
+          <div class="settings-item-body">
+            <div class="settings-item-title">Exporter les données</div>
+            <div class="settings-item-sub">Télécharger en JSON</div>
+          </div>
+          <div class="chevron">${iconSvg('chevron')}</div>
+        </div>
+        <div class="settings-item" onclick="document.getElementById('import-input').click()">
+          <div class="settings-item-icon" style="background:rgba(245,158,11,0.12)">
+            <svg width="20" height="20" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </div>
+          <div class="settings-item-body">
+            <div class="settings-item-title">Importer des données</div>
+            <div class="settings-item-sub">Charger un fichier JSON</div>
+          </div>
+          <div class="chevron">${iconSvg('chevron')}</div>
+        </div>
+      </div>
+
+      <div class="settings-section" style="margin-top:20px">
+        <div class="settings-section-title">Application</div>
+        <div class="settings-item" style="cursor:default">
+          <div class="settings-item-icon" style="background:rgba(34,197,94,0.1)">
+            <svg width="20" height="20" fill="none" stroke="#4ade80" stroke-width="2.2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div class="settings-item-body">
+            <div class="settings-item-title">Mode hors-ligne</div>
+            <div class="settings-item-sub">✅ Fonctionne sans réseau</div>
+          </div>
+        </div>
+        <div class="settings-item" style="cursor:default">
+          <div class="settings-item-icon" style="background:rgba(34,197,94,0.1)">
+            ${iconSvg('camera', 20)}
+          </div>
+          <div class="settings-item-body">
+            <div class="settings-item-title">Appareil photo</div>
+            <div class="settings-item-sub">Photos stockées localement</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align:center;padding:24px;color:var(--text3);font-size:12px">
+        DiagnoAtelier v1.0 • Données stockées localement
+      </div>
+    </div>`;
+  el('content').insertAdjacentHTML('beforeend', `<input type="file" id="import-input" accept=".json" style="display:none" onchange="importData(this)">`);
+}
+
+function toggleMode() {
+  state.isMaintenance = !state.isMaintenance;
+  toast(state.isMaintenance ? '🔧 Mode Maintenance activé' : '👷 Mode Opérateur activé');
+  render();
+}
+
+// ═══════════════════════════════════════════════════════
+// NAVIGATION UTILS
+// ═══════════════════════════════════════════════════════
+async function openMachine(id) {
+  const m = await dbGet('machines', id);
+  state.selectedMachine = m;
+  state.selectedDefaut = null;
+  state.completedSteps = [];
+  state.searchQ = '';
+  state.filterNiveau = 'Tous';
+  renderList();
+}
+
+async function openDefaut(id) {
+  const d = await dbGet('defauts', id);
+  state.selectedDefaut = d;
+  state.completedSteps = [];
+  renderDetail();
+}
+
+// ═══════════════════════════════════════════════════════
+// MACHINE FORM
+// ═══════════════════════════════════════════════════════
+const EMOJIS = ['🏭','⚙️','🔩','🌡️','🏷️','💧','🔧','⚡','🔬','📦','🚿','🥫'];
+
+async function openMachineForm(id) {
+  const isNew = !id;
+  const m = id ? await dbGet('machines', id) : { nom:'', icone:'⚙️', code:'' };
+  const emojiPicker = EMOJIS.map(e => `<span onclick="selectEmoji('${e}')" style="font-size:24px;cursor:pointer;padding:4px;border-radius:6px;display:inline-block" id="emoji-${e}">${e}</span>`).join('');
+
+  showModal(`
+    <div class="modal-title">${isNew ? '➕ Nouvelle machine' : '✏️ Modifier machine'}</div>
+    <div class="form-wrap">
+      <div class="form-group">
+        <label class="form-label">Icône</label>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px" id="emoji-picker">${emojiPicker}</div>
+        <input type="hidden" id="f-icone" value="${escHtml(m.icone)}">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Code</label>
+          <input class="form-input" id="f-code" value="${escHtml(m.code)}" placeholder="M01">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nom</label>
+          <input class="form-input" id="f-nom" value="${escHtml(m.nom)}" placeholder="Remplisseuse L1">
+        </div>
+      </div>
+    </div>
+    <div class="btn-row">
+      ${!isNew ? `<button class="btn btn-danger" style="flex:0.6" onclick="deleteMachine(${id})">${iconSvg('trash',16)} Supprimer</button>` : ''}
+      <button class="btn btn-primary" onclick="saveMachine(${id||'null'})">${iconSvg('save',16)} Enregistrer</button>
+    </div>
+  `);
+  // highlight current emoji
+  setTimeout(() => {
+    document.querySelectorAll('#emoji-picker span').forEach(s => {
+      s.style.background = s.textContent.trim() === m.icone ? 'rgba(245,158,11,0.2)' : '';
+    });
+  }, 50);
+}
+
+function selectEmoji(e) {
+  el('f-icone').value = e;
+  document.querySelectorAll('#emoji-picker span').forEach(s => {
+    s.style.background = s.textContent.trim() === e ? 'rgba(245,158,11,0.3)' : '';
+  });
+}
+
+async function saveMachine(id) {
+  const nom = el('f-nom').value.trim();
+  const code = el('f-code').value.trim();
+  const icone = el('f-icone').value || '⚙️';
+  if (!nom) { toast('⚠️ Nom obligatoire'); return; }
+  if (id) await dbPut('machines', { id, nom, code, icone });
+  else await dbAdd('machines', { nom, code, icone });
+  closeModal();
+  toast(id ? '✅ Machine mise à jour' : '✅ Machine ajoutée');
+  render();
+}
+
+async function deleteMachine(id) {
+  if (!confirm('Supprimer cette machine et tous ses défauts ?')) return;
+  const defauts = await dbGetByIndex('defauts', 'machineId', id);
+  for (const d of defauts) await dbDelete('defauts', d.id);
+  await dbDelete('machines', id);
+  closeModal();
+  state.selectedMachine = null;
+  toast('🗑️ Machine supprimée');
+  render();
+}
+
+// ═══════════════════════════════════════════════════════
+// DEFAUT FORM
+// ═══════════════════════════════════════════════════════
+async function openDefautForm(id) {
+  const isNew = !id;
+  const d = id ? await dbGet('defauts', id) : {
+    machineId: state.selectedMachine?.id || '',
+    code:'', nom:'', description:'', causes:'', etapes:'',
+    testRapide:'', tempsEstime:'', niveau:'Opérateur', photos:[]
+  };
+  state.formPhotos = [...(d.photos||[])];
+  const machines = await dbGetAll('machines');
+
+  const photosHtml = () => {
+    let h = '<div class="photos-grid" id="photos-grid">';
+    state.formPhotos.forEach((p,i) => {
+      h += `<div class="photo-thumb"><img src="${p}" alt=""><button class="del-btn" onclick="removeFormPhoto(${i})">${iconSvg('x',14)}</button></div>`;
+    });
+    h += `<div class="add-photo-btn" onclick="triggerCamera('form')">${iconSvg('camera',24)}<span>Ajouter photo</span></div>`;
+    h += '</div>';
+    return h;
+  };
+
+  showModal(`
+    <div class="modal-title">${isNew ? '➕ Nouveau défaut' : '✏️ Modifier défaut'}</div>
+    <div class="form-wrap">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Code</label>
+          <input class="form-input" id="f-code" value="${escHtml(d.code)}" placeholder="RL-001">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Niveau</label>
+          <select class="form-select" id="f-niveau">
+            <option ${d.niveau==='Opérateur'?'selected':''}>Opérateur</option>
+            <option ${d.niveau==='Maintenance'?'selected':''}>Maintenance</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Machine</label>
+        <select class="form-select" id="f-machine">
+          ${machines.map(m => `<option value="${m.id}" ${m.id===d.machineId?'selected':''}>${m.icone||'⚙️'} ${escHtml(m.nom)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nom du défaut</label>
+        <input class="form-input" id="f-nom" value="${escHtml(d.nom)}" placeholder="Fuite joint étanchéité">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description courte</label>
+        <input class="form-input" id="f-desc" value="${escHtml(d.description)}" placeholder="Symptôme observable…">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Causes possibles</label>
+        <textarea class="form-textarea" id="f-causes" rows="4" placeholder="Une cause par ligne…">${escHtml(d.causes)}</textarea>
+        <div class="form-hint">Saisir une cause par ligne</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Étapes de diagnostic</label>
+        <textarea class="form-textarea" id="f-etapes" rows="5" placeholder="Étape 1&#10;Étape 2&#10;…">${escHtml(d.etapes)}</textarea>
+        <div class="form-hint">Saisir une étape par ligne (numérotation automatique)</div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Test rapide</label>
+          <input class="form-input" id="f-test" value="${escHtml(d.testRapide)}" placeholder="Vérifier LED…">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Temps estimé</label>
+          <input class="form-input" id="f-temps" value="${escHtml(d.tempsEstime)}" placeholder="30 min">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Photos (${state.formPhotos.length})</label>
+        <div id="photos-container">${photosHtml()}</div>
+      </div>
+    </div>
+    <div class="btn-row" style="padding-bottom:8px">
+      ${!isNew ? `<button class="btn btn-danger" style="flex:0.6" onclick="deleteDefaut(${id})">${iconSvg('trash',16)}</button>` : ''}
+      <button class="btn btn-primary" onclick="saveDefaut(${id||'null'})">${iconSvg('save',16)} Enregistrer</button>
+    </div>
+  `);
+}
+
+function removeFormPhoto(i) {
+  state.formPhotos.splice(i,1);
+  refreshFormPhotos();
+}
+
+function refreshFormPhotos() {
+  const c = el('photos-container');
+  if (!c) return;
+  let h = '<div class="photos-grid" id="photos-grid">';
+  state.formPhotos.forEach((p,i) => {
+    h += `<div class="photo-thumb"><img src="${p}" alt=""><button class="del-btn" onclick="removeFormPhoto(${i})">${iconSvg('x',14)}</button></div>`;
+  });
+  h += `<div class="add-photo-btn" onclick="triggerCamera('form')">${iconSvg('camera',24)}<span>Ajouter photo</span></div>`;
+  h += '</div>';
+  c.innerHTML = h;
+}
+
+async function saveDefaut(id) {
+  const nom = el('f-nom')?.value.trim();
+  const code = el('f-code')?.value.trim();
+  if (!nom || !code) { toast('⚠️ Code et nom obligatoires'); return; }
+  const data = {
+    machineId: parseInt(el('f-machine').value),
+    code, nom,
+    description: el('f-desc').value.trim(),
+    causes: el('f-causes').value.trim(),
+    etapes: el('f-etapes').value.trim(),
+    testRapide: el('f-test').value.trim(),
+    tempsEstime: el('f-temps').value.trim(),
+    niveau: el('f-niveau').value,
+    photos: [...state.formPhotos],
+  };
+  if (id) { await dbPut('defauts', { ...data, id }); }
+  else { await dbAdd('defauts', data); }
+  closeModal();
+  toast(id ? '✅ Fiche mise à jour' : '✅ Défaut ajouté');
+  // refresh
+  if (state.selectedDefaut?.id === id) {
+    state.selectedDefaut = await dbGet('defauts', id);
+    renderDetail();
+  } else {
+    state.selectedMachine = await dbGet('machines', data.machineId);
+    renderList();
+  }
+}
+
+async function deleteDefaut(id) {
+  if (!confirm('Supprimer cette fiche diagnostic ?')) return;
+  await dbDelete('defauts', id);
+  closeModal();
+  state.selectedDefaut = null;
+  toast('🗑️ Fiche supprimée');
+  renderList();
+}
+
+// ═══════════════════════════════════════════════════════
+// CAMERA
+// ═══════════════════════════════════════════════════════
+let _cameraCtx = null;
+function triggerCamera(ctx) {
+  _cameraCtx = ctx;
+  el('camera-input').value = '';
+  el('camera-input').click();
+}
+
+function handlePhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const dataUrl = e.target.result;
+    if (_cameraCtx === 'form') {
+      state.formPhotos.push(dataUrl);
+      refreshFormPhotos();
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+// ═══════════════════════════════════════════════════════
+// LIGHTBOX
+// ═══════════════════════════════════════════════════════
+function openLightboxSrc(src) {
+  document.body.insertAdjacentHTML('beforeend', `
+    <div class="modal-img-full" onclick="this.remove()">
+      <img src="${src}" alt="Photo">
+      <button class="modal-img-close" onclick="this.parentElement.remove()">${iconSvg('x',20)}</button>
+    </div>`);
+}
+
+// ═══════════════════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════════════════
+function showModal(inner) {
+  const existing = document.querySelector('.modal-overlay');
+  if (existing) existing.remove();
+  document.body.insertAdjacentHTML('beforeend', `
+    <div class="modal-overlay" id="modal-overlay" onclick="closeModalIfBg(event)">
+      <div class="modal-sheet slide-up">
+        <div class="modal-handle"></div>
+        ${inner}
+      </div>
+    </div>`);
+}
+
+function closeModalIfBg(e) {
+  if (e.target.id === 'modal-overlay') closeModal();
+}
+
+function closeModal() {
+  const m = el('modal-overlay');
+  if (m) m.remove();
+}
+
+// ═══════════════════════════════════════════════════════
+// EXPORT / IMPORT
+// ═══════════════════════════════════════════════════════
+async function exportData() {
+  const [machines, defauts] = await Promise.all([dbGetAll('machines'), dbGetAll('defauts')]);
+  const blob = new Blob([JSON.stringify({ machines, defauts }, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `diagno-atelier-${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); URL.revokeObjectURL(url);
+  toast('📥 Export téléchargé');
+}
+
+async function importData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const text = await file.text();
+  try {
+    const { machines, defauts } = JSON.parse(text);
+    if (!confirm(`Importer ${machines.length} machines et ${defauts.length} défauts ? (remplace les données existantes)`)) return;
+    // clear
+    const [oldM, oldD] = await Promise.all([dbGetAll('machines'), dbGetAll('defauts')]);
+    for (const m of oldM) await dbDelete('machines', m.id);
+    for (const d of oldD) await dbDelete('defauts', d.id);
+    for (const m of machines) await dbPut('machines', m);
+    for (const d of defauts) await dbPut('defauts', d);
+    toast('✅ Import réussi');
+    render();
+  } catch(e) { toast('❌ Fichier invalide'); }
+}
+
+// ═══════════════════════════════════════════════════════
+// SERVICE WORKER REGISTRATION
+// ═══════════════════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/Diagno-atelier/sw.js').then(reg => {
+      console.log('SW registered', reg.scope);
+    }).catch(err => console.log('SW error', err));
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+(async () => {
+  await openDB();
+  await seedIfEmpty();
+  render();
+})();
+</script>
+</body>
+</html>
