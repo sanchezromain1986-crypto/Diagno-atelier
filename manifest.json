@@ -1,11 +1,14 @@
 {
   "name": "DiagnoAtelier",
   "short_name": "DiagnoAtelier",
-  "start_url": "/",
+  "description": "Application de diagnostic de pannes pour atelier agroalimentaire",
+  "start_url": "/Diagno-atelier/",
+  "scope": "/Diagno-atelier/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0a0f1a",
   "theme_color": "#0a0f1a",
-  "description": "Application de diagnostic atelier",
+  "lang": "fr",
   "icons": [
     {
       "src": "icon.png",
@@ -19,5 +22,7 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "categories": ["productivity", "utilities"],
+  "screenshots": []
 }
